@@ -1,20 +1,26 @@
 const request = require("request");
 
-const userInput = process.argv[2];
+const fetchBreedDescription = function(breedName, callback) {
+  request(
+    `https://api.thecatapi.com/v1/breeds/search?q=${breedName}`,
+    function(error, response, body) {
+      if (error) {
+        callback(error, null); // pass the error to the callback
+      } else {
+        const data = JSON.parse(body);
 
-request(
-  `https://api.thecatapi.com/v1/breeds/search?q=${userInput}`,
-  function(error, response, body) {
-    console.log(`error: ${error}`);
-    console.log(`res: ${response}`);
-    console.log(`body: ${body}`);
-
-    console.log(typeof body);
-    const data = JSON.parse(body);
-
-    if (!data || data.length === 0) {
-      console.log(`That wasn't the name of a real cat breed :(`);
+        if (!data || data.length === 0) { // if the breed does not exist this will be empty array
+            console.log('not a real breed :(')
+            callback('not a breed', null); // we have to set description to null if it does not exist
+            return;
+        }
+        
+        callback(null, data[0].description); // if it's a real breed call the callback with the description
+      }
     }
-    console.log(typeof data);
-  }
-);
+  );
+};
+
+module.exports = {
+  fetchBreedDescription,
+};
